@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music Player</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .current-song {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .current-song h3 {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .current-song p {
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn.play {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn.pause {
+            background: linear-gradient(45deg, #FF9800, #F57C00);
+            box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+        }
+
+        .btn.stop {
+            background: linear-gradient(45deg, #f44336, #d32f2f);
+            box-shadow: 0 4px 15px rgba(244, 67, 54, 0.3);
+        }
+
+        .playlist {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .playlist h3 {
+            color: #333;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .song-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .song-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .song-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        .song-item.current {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .remove-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 15px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+
+        .add-song {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .add-song input {
+            flex: 1;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 1em;
+        }
+
+        .add-song input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .status {
+            text-align: center;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+
+        .status.playing {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status.paused {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status.stopped {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+            
+            .controls {
+                flex-wrap: wrap;
+            }
+            
+            .btn {
+                flex: 1;
+                min-width: 80px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎵 Music Player</h1>
+        </div>
+
+        <div class="current-song">
+            <h3>Now Playing</h3>
+            <p id="current-song-display">No song selected</p>
+        </div>
+
+        <div class="controls">
+            <button class="btn previous" onclick="previous()">⏮ Previous</button>
+            <button class="btn play" id="play-btn" onclick="play()">▶ Play</button>
+            <button class="btn pause" id="pause-btn" onclick="pause()">⏸ Pause</button>
+            <button class="btn stop" onclick="stop()">⏹ Stop</button>
+            <button class="btn" onclick="skip()">⏭ Next</button>
+        </div>
+
+        <div class="playlist">
+            <h3>📋 Playlist</h3>
+            <div class="song-list" id="song-list">
+                <!-- Songs will be loaded here -->
+            </div>
+            <div class="add-song">
+                <input type="text" id="new-song-input" placeholder="Enter song name...">
+                <button class="btn" onclick="addSong()">Add Song</button>
+            </div>
+        </div>
+
+        <div class="status" id="status-display">
+            Status: Stopped
+        </div>
+    </div>
+
+    <script>
+        let currentState = 'stopped';
+        let currentSong = null;
+
+        // Load initial status
+        loadStatus();
+
+        // Update status every 2 seconds
+        setInterval(loadStatus, 2000);
+
+        function loadStatus() {
+            fetch('/api/status')
+                .then(response => response.json())
+                .then(data => {
+                    updateDisplay(data);
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function updateDisplay(data) {
+            // Update current song display
+            const songDisplay = document.getElementById('current-song-display');
+            songDisplay.textContent = data.current_song || 'No song selected';
+
+            // Update status display
+            const statusDisplay = document.getElementById('status-display');
+            statusDisplay.textContent = `Status: ${data.state.charAt(0).toUpperCase() + data.state.slice(1)}`;
+            statusDisplay.className = `status ${data.state}`;
+
+            // Update playlist
+            updatePlaylist(data.playlist, data.current_song);
+
+            // Update button states
+            updateButtonStates(data.state);
+        }
+
+        function updatePlaylist(playlist, currentSong) {
+            const songList = document.getElementById('song-list');
+            songList.innerHTML = '';
+
+            playlist.forEach(song => {
+                const songItem = document.createElement('div');
+                songItem.className = `song-item ${song === currentSong ? 'current' : ''}`;
+                songItem.innerHTML = `
+                    <span>${song}</span>
+                    <button class="remove-btn" onclick="removeSong('${song}')">Remove</button>
+                `;
+                songList.appendChild(songItem);
+            });
+        }
+
+        function updateButtonStates(state) {
+            const playBtn = document.getElementById('play-btn');
+            const pauseBtn = document.getElementById('pause-btn');
+
+            if (state === 'playing') {
+                playBtn.style.display = 'none';
+                pauseBtn.style.display = 'inline-block';
+            } else {
+                playBtn.style.display = 'inline-block';
+                pauseBtn.style.display = 'none';
+            }
+        }
+
+        function play() {
+            fetch('/api/play', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        loadStatus();
+                    }
+                });
+        }
+
+        function pause() {
+            fetch('/api/pause', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        loadStatus();
+                    }
+                });
+        }
+
+        function stop() {
+            fetch('/api/stop', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        loadStatus();
+                    }
+                });
+        }
+
+        function skip() {
+            fetch('/api/skip', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        loadStatus();
+                    }
+                });
+        }
+
+        function previous() {
+            fetch('/api/previous', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        loadStatus();
+                    }
+                });
+        }
+
+        function addSong() {
+            const input = document.getElementById('new-song-input');
+            const song = input.value.trim();
+            
+            if (song) {
+                fetch('/api/add_song', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ song: song })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        input.value = '';
+                        loadStatus();
+                    }
+                });
+            }
+        }
+
+        function removeSong(song) {
+            fetch('/api/remove_song', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ song: song })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    loadStatus();
+                }
+            });
+        }
+
+        // Enter key to add song
+        document.getElementById('new-song-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addSong();
+            }
+        });
+    </script>
+</body>
+</html>
