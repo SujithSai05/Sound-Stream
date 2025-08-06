@@ -13,11 +13,10 @@ current_index = -1
 
 # Sample playlist to start with
 sample_songs = [
-    "Bohemian Rhapsody - Queen",
-    "Hotel California - Eagles", 
-    "Stairway to Heaven - Led Zeppelin",
-    "Imagine - John Lennon",
-    "Hey Jude - The Beatles"
+    "spotify_song1", 
+    "spotify_song2",
+    "local_song1.mp3", 
+    "local_song2.mp3"
 ]
 
 # Initialize playlist with sample songs
@@ -192,3 +191,4 @@ if __name__ == '__main__':
         shutil.move('Interface.html', 'templates/Interface.html')
     
     app.run(debug=True, host='0.0.0.0', port=5000)
+
